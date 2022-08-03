@@ -37,7 +37,7 @@ require(balanceAfter >= balanceBefore, "Flash loan hasn't been paid back");
 
 There are several variables that intervene in those conditions. Both `balanceBefore` and `balanceAfter` are obtained from the well-known `ERC20.balanceOf()` method, assuming there should not be any issue here.
 
-Then there is `borrowAmount`, which is set by the borrower. This variable has to be above `0` and also smaller than the balance of the pool; otherwise the transaction will revert. But only the transaction would be reverted if the conditions around `borrowAmount`: we are looking to break the whole contract so that nobody can use it anymore.
+Then there is `borrowAmount`, which is set by the borrower. This variable has to be above `0` and also smaller than the balance of the pool; otherwise the transaction will revert. But only that specific transaction would be reverted if the conditions around `borrowAmount` would not be met. Instead, we are looking to break the whole contract so that nobody can use it anymore.
 
 The last option we have is to inspect `poolBalance`. There is an extra note in the contracts regarding this variable, saying it is:
 
