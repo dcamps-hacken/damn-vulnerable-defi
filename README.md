@@ -45,7 +45,7 @@ The last option we have is to inspect `poolBalance`. There is an extra note in t
 // Ensured by the protocol via the `depositTokens` function
 ```
 
-So and what is the relationship it has with `poolBalance`? When using that function to deposit DVT tokens, the poolBalance will be updated:
+And what is the relationship it has with `poolBalance`? When using that function to deposit DVT tokens, the poolBalance will be updated:
 
 ```
 poolBalance = poolBalance + amount;
